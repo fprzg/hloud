@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chunked File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+
+        .file-item {
+            margin-bottom: 1rem;
+        }
+
+        .progress {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #4caf50;
+            width: 0%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chunked File Upload</h1>
+    <form action="" id="upload-form">
+        <input type="file" name="" id="file-input" multiple>
+        <button type="button" id="upload-button">Upload</button>
+    </form>
+    <div id="file-list"></div>
+    <script>
+        const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB
+        const API_BASE_URL = "http://localhost:8080"
+
+        document.getElementById('upload-button'); addEventListener('click', async () => {
+            const files = document.getElementById('file-input').files;
+            for (const file of files) {
+                await uploadFile(file);
+            }
+        });
+
+        async function uploadFile(file) {
+            const fileID = await startUpload(file);
+            if (!fileID) {
+                return;
+            }
+
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            const fileItem = createFileItem(file.name, totalChunks);
+
+            for (let i = 0; i < totalChunks; ++i) {
+                const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+                const success = await uploadChunk(fileID, cunk, i + 1);
+                if (!success) {
+                    alert(`Error uploading chunk ${i + 1} of ${file.name}`)
+                    return;
+                }
+                updateProgress(fileItem, i + 1, totalChunks);
+            }
+
+            const completed = await completeUpload(fileID);
+            if (completed) {
+                fileItem.querySelector('.status').textContent = "Upload Copmlete!"
+            } else {
+                alert(`Error completing upload for ${file.name}`);
+            }
+        }
+
+        async function startUpload(file) {
+            const response = await fetch(`${API_BASE_URL}/start-upload`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    fileSize: file.size,
+                    chunkSize: CHUNK_SIZE
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.fileID;
+            } else {
+                alert(`Error starting upload for ${file.name}`);
+                return null;
+            }
+        }
+
+        async function uploadChunk(fileID, chunk, chunkNumber) {
+            const formData = new FormData();
+            formData.append('chunk', chunk);
+
+            const response = await fetch(`${API_BASE_URL}/upload-chunk`, {
+                method: 'POST',
+                headers: {
+                    'File-UUID': fileID,
+                    'Chunk-Number': chunkNumber
+                },
+                body: formData
+            });
+
+            return response.ok;
+        }
+
+        async function completeUpload(fileID) {
+            const response = await fetch(`${API_BASE_URL}/complete-upload`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fileID })
+            })
+
+            return response.ok;
+        }
+
+        function createFileItem(filename, totalChunks) {
+            const fileList = document.getElementById('file-list');
+            const fileItem = document.createElement('div');
+            fileItem.className = `file-item`;
+            fileItem.innerHTML = `
+                <strong> ${filename}</strong>
+                <div class="progress">
+                    <div class="progress-bar"></div>
+                </div>
+                <span class="status">Uploading...</span>
+                `;
+            fileList.appendChild(fileItem);
+            fileItem.totalChunks(totalChunks);
+            return fileItem;
+        }
+
+        function updateProgress(fileItem, chunkNumber, totalChunks) {
+            const progressBar = fileItem.queyrSelector('.progress-bar');
+            const progress = Math.round((chunkNumber / totalChunks) * 100);
+            progressBar.style.width = `${progress}%`;
+        }
+    </script>
+</body>
+
+</html>
