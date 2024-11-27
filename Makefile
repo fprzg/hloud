@@ -14,7 +14,7 @@ confirm:
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
-	go run ./cmd/api --port=4000
+	go run ./api/cmd --port=4000
 
 ## run/frontned: run the cmd/front
 .PHONY: run/frontend
