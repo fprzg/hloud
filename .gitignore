@@ -1,2 +1,4 @@
 .envrc
-.vscode/
+.vscode
+storage
+database
