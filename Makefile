@@ -1,4 +1,4 @@
-include .envrc
+include config/.env-api
 
 ## help: print this message
 .PHONY: help
@@ -14,9 +14,9 @@ confirm:
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
-	go run ./api/cmd --port=4000
+	cd ./api && go run ./cmd --port=4000
 
 ## run/frontned: run the cmd/front
 .PHONY: run/frontend
 run/frontend:
-	go run ./cmd/frontend --port=4001
+	cd ./frontend && go run ./cmd/main.go --port=4001

@@ -4,38 +4,35 @@ import (
 	"flag"
 	"fmt"
 	"log"
+
+	"api.hloud.fprzg.net/internal/handlers"
+	"api.hloud.fprzg.net/internal/info"
 )
-
-var (
-	version string
-)
-
-//buildTime string
-
-type config struct {
-	port       int
-	env        string
-	storageDir string
-}
 
 type application struct {
-	config config
+	handlers handlers.Handlers
+	cfg      *info.Config
 }
 
-func main() {
-	var cfg config
+var (
+	build info.Build
+)
 
-	flag.IntVar(&cfg.port, "port", 4000, "API server port.")
-	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production).")
-	flag.StringVar(&cfg.storageDir, "storage", "/home/ubu24-t480/Code/hloud/storage", "Directory where you store the files.")
+func main() {
+	var cfg info.Config
+
+	flag.IntVar(&cfg.Port, "port", 4000, "API server port.")
+	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production).")
+	flag.StringVar(&cfg.StorageDir, "storage", "/home/ubu24-t480/Code/hloud/storage", "Directory where you store the files.")
 
 	flag.Parse()
 
 	app := application{
-		config: cfg,
+		cfg:      &cfg,
+		handlers: handlers.NewHandlers(&cfg, &build),
 	}
 
-	fmt.Printf("Listening on port :%d", app.config.port)
+	fmt.Printf("Listening on port %s", app.cfg.GetPort())
 	err := app.serve()
 	if err != nil {
 		log.Fatalf("Error %v\n", err)

@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"encoding/json"
@@ -9,13 +9,13 @@ import (
 	"strings"
 )
 
-type envelope map[string]interface{}
+type Envelope map[string]interface{}
 
 const (
 	JSONMaxSizeBytes = 1_048_576
 )
 
-func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func ReadJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	r.Body = http.MaxBytesReader(w, r.Body, int64(JSONMaxSizeBytes))
 
 	dec := json.NewDecoder(r.Body)
@@ -67,7 +67,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 	return nil
 }
 
-func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
+func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
 	json, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
