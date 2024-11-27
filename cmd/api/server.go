@@ -76,12 +76,17 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/v1/mkdir/*path", app.mkdirHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/upload/*path", app.singleUploadHandler)
-
 	router.HandlerFunc(http.MethodPost, "/v1/chunked-upload-start/*path", app.chunkedUploadStartHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/chunked-upload-part/*path", app.chunkedUploadPartHandler)
 
-	//router.HandlerFunc(http.MethodDelete, "/v1/delete", app.deleteFilehandler)
-	//router.HandlerFunc(http.MethodPost, "/v1/rename", app.renameFileHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/fileMetadata/*path", app.fileMetadataHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/dirMetadata/*path", app.directoryMetadataHandler)
+
+	router.HandlerFunc(http.MethodDelete, "/v1/rmdir/*path", app.rmdirHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/delete/*path", app.deleteFilehandler)
+
+	router.HandlerFunc(http.MethodPost, "/v1/rename/*path", app.renameHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/move/*path", app.moveHandler)
 
 	// TODO(Farid): Add middleware
 	return router
